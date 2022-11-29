@@ -25,27 +25,28 @@ def updateStates(#code here):
 def updateValues(data, fileNum):
     X = 901
     Y = 901
-    # ignore: neighbors = lambda x,y : [(x2,y2) for x2 in range(x-1,x+2) for y2 in range(y-1,y+2) if (-1 < x <= X and -1 < y <= Y and (x != x2 or y != y2) and (0 <= x2 <= X) and (0 <= y2 <= Y))]
+    neighbors = lambda x,y : [(x2,y2) for x2 in range(x-1,x+2) for y2 in range(y-1,y+2) if (-1 < x <= X and -1 < y <= Y and (x != x2 or y != y2) and (0 <= x2 <= X) and (0 <= y2 <= Y))]
     # enumerated iteration
     for idx, x in np.ndenumerate(data):
+        # asymptomatic
         if x == 0:
-            print("asymp")
+            print()
+        # affected
         elif x == 1:
-            print("affect")
+            print()
             # rule 1
                 #...
             # rule 2
                 #...
+        # recovery
         else:
-            print("covid")
+            print()
             # rule 1
             r = random.random()
             if r < .1:
                 data[idx] = 0
             #rule 2
                 #...
-
-
     return data
 
 
@@ -56,9 +57,21 @@ def plotSpatial(data, fileNum):
     plt.pcolor(data, cmap=colormap, edgecolors='k', linewidths=1, vmin=0, vmax=2)
     cbar = plt.colorbar(label="", orientation="vertical", ticks=[0.33, 1, 1.66])
     cbar.ax.set_yticklabels(['No symptoms', 'Affected', 'Recovering'])
+    plt.savefig('figure_' + str(fileNum) + '.jpg', bbox_inches='tight', pad_inches=0.02)
+    plt.close()
+
+
+# plots line graph
+def plotDynamics(data):
+    fig, axes = plt.subplots(figsize=(7, 6))
+    axes.plot(data[0], data[2], label='affected', color='blue')
+    axes.plot(data[0], data[3], label='recovery', color='red')
+    axes.set_xlabel('Time (days)')
+    axes.set_ylabel('Number of individuals')
+    axes.legend(bbox_to_anchor=(.3, 1), fontsize=13, fancybox=False, shadow=False, frameon=False)
     plt.imshow(data)
     plt.show()
-    plt.savefig('figure_' + str(fileNum) + '.jpg', bbox_inches='tight', pad_inches=0.02)
+    plt.savefig('temporalDynamics.pdf', bbox_inches='tight', pad_inches=0.02)
     plt.close()
 
 
@@ -81,7 +94,7 @@ def main():
     recovery.append(np.count_nonzero(domain == 2))
 
     # for loop for 100 iterations
-    for currTime in range(1, 10):
+    for currTime in range(1, 101):
         domain = updateValues(domain, currTime)
         plotSpatial(domain, currTime)
         simTime.append(currTime)
@@ -89,7 +102,6 @@ def main():
         affected.append(np.count_nonzero(domain == 1))
         recovery.append(np.count_nonzero(domain == 2))
     temporal_dynamics = [simTime, asymptomatic, affected, recovery]
-    # code here
-
+    plotDynamics(temporal_dynamics)
 
 main()
